@@ -1,0 +1,47 @@
+workspace(name = "cann")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# rules_cc - dùng phiên bản mới hơn
+http_archive(
+    name = "rules_cc",
+    sha256 = "7e2a1f6c5dd908e6e88d7c80257c99d14e16fa985b56342287fddb6a32c435b5",
+    strip_prefix = "rules_cc-0.0.11",
+    url = "https://github.com/bazelbuild/rules_cc/releases/download/0.0.11/rules_cc-0.0.11.tar.gz",
+)
+
+# ABSL
+http_archive(
+    name = "com_google_absl",
+    sha256 = "72bb0b295df1a66f1057ad7f7a1b9d4405a8777bcc4c8fae62a1b5b6b2a6c6f6",
+    strip_prefix = "abseil-cpp-20230802.0",
+    url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz",
+)
+
+# Eigen
+http_archive(
+    name = "eigen",
+    build_file = "//:eigen.BUILD",
+    sha256 = "8586084f71f9bde545ee7fa6d00288b264a2b7ac3607b974e54d13e7162c1c72",
+    url = "https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz",
+)
+
+# pybind11
+http_archive(
+    name = "pybind11",
+    build_file = "@pybind11_bazel//:pybind11.BUILD",
+    sha256 = "d475978da0cdc2d43b73f30910786759d593a9d8ee05b1b6846d1eb16c6d2e0c",
+    strip_prefix = "pybind11-2.10.4",
+    url = "https://github.com/pybind/pybind11/archive/v2.10.4.tar.gz",
+)
+
+# pybind11_bazel
+http_archive(
+    name = "pybind11_bazel",
+    sha256 = "ca401da77da9712bb585595796c4d8ec5253e55292f5ecf7773db1b33b26715e",
+    strip_prefix = "pybind11_bazel-fd7d88857cca3d7435b06f3ac6abab77cd9983b2",
+    url = "https://github.com/pybind/pybind11_bazel/archive/fd7d88857cca3d7435b06f3ac6abab77cd9983b2.zip",
+)
+
+load("@pybind11_bazel//:python_configure.bzl", "python_configure")
+python_configure(name = "local_config_python")

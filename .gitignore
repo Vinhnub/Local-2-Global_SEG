@@ -216,3 +216,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+#Bazel
+/google-research/cann/bazel-bin
+/google-research/cann/bazel-out
+/google-research/cann/bazel-testlogs
+/google-research/cann/bazel-*
+
+
+/data/datasets/roxford5k/jpg
+/data/datasets/rparis6k/jpg
+
+/data/feature/fire/rparis6k/database
+/data/feature/fire/rparis6k/query
+
+/data/feature/fire/roxford5k/database
+/data/feature/fire/rparis6k/query

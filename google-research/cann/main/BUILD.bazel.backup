@@ -1,0 +1,38 @@
+package(default_visibility = ["//visibility:public"])
+
+cc_binary(
+    name = "colored_c_nn_random_grids_index_main",
+    srcs = [
+        "colored_c_nn_random_grids_index_main.cc",
+        "cann_rg.cc",
+        "cann_rg.h",
+        "colored_c_nn_random_grids_index.cc",
+        "colored_c_nn_random_grids_index.h",
+        "int_mapping.cc",
+        "int_mapping.h",
+        "thread_pool.cc",
+        "thread_pool.h",
+        "npy_reader.h",
+    ],
+    hdrs = [
+        "cann_rg.h",
+        "colored_c_nn_random_grids_index.h",
+        "int_mapping.h",
+        "thread_pool.h",
+        "npy_reader.h",
+    ],
+    includes = ["."],
+    deps = [
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+        "@eigen//:eigen",
+    ],
+    copts = [
+        "-std=c++17",
+        "-O3",
+        "-march=native",
+    ],
+)
