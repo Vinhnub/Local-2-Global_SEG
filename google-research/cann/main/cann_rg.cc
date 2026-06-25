@@ -73,6 +73,8 @@ std::pair<std::vector<std::string>, std::vector<Eigen::MatrixXf>> ReadList(
   return ret;
 }
 
+// ===== GIỮ NGUYÊN CHAMFER SIMILARITY CỦA PAPER =====
+// KHÔNG đổi công thức score_r, chỉ đổi cách tính score cuối cùng
 std::vector<ScoredPair> ComputeQueryScores(const DescriptorData &query_set,
                                            const DescriptorData &index_set,
                                            int num_features, int dim,
@@ -139,10 +141,12 @@ std::vector<ScoredPair> ComputeQueryScores(const DescriptorData &query_set,
     radii.push_back(current_r);
     current_r *= 1.0 + (c_approx - 1.0) * 0.25;
   }
+  
   std::cout << "p_0, p_1: " << p0 << "," << p1 << " eps: " << eps
             << " rg_R: " << rg_R << " grids: " << num_grids
             << " c: " << c_approx << " radiis: " << radii.size()
             << " min_distance: " << min_distance << std::endl;
+            
   const int num_queries = query_set_cpy.first.size();
   std::vector<std::vector<std::pair<int, double>>> nn(num_queries);
   std::vector<std::vector<absl::flat_hash_set<int>>> feature_and_camera(
@@ -151,9 +155,12 @@ std::vector<ScoredPair> ComputeQueryScores(const DescriptorData &query_set,
   float all_query_time = 0;
   std::vector<absl::Mutex> nn_mutex(color_set.size());
   int radii_num = 0;
+  
   for (auto rad : radii) {
+    // ===== GIỮ NGUYÊN CÔNG THỨC CHAMFER SIMILARITY CỦA PAPER =====
     const double score_r =
         std::pow(1.0 - std::pow(rad / p0, p1 / (1 - p1)), (1 - p1) / p1);
+    
     absl::Time t1 = absl::Now();
     visualmapping::processing::ColoredCNNRandomGridsIndex colored_c_nn_rg;
     CHECK_OK(colored_c_nn_rg.Setup(points, colors, num_grids, w, rad));
@@ -201,16 +208,29 @@ std::vector<ScoredPair> ComputeQueryScores(const DescriptorData &query_set,
   for (int k = 0; k < num_queries; ++k) {
     const auto query = query_set_cpy.second[k];
     const std::string query_string = query_set_cpy.first[k];
+    
+    // ===== SẮP XẾP TĂNG DẦN (distance nhỏ nhất trước) =====
     absl::c_sort(nn[k], [](const auto &a, const auto &b) {
-      return a.second > b.second;
+      return a.second < b.second;  // Đảo chiều
     });
-    for (int i = 0; i < std::min<int>(50, nn[k].size()); i++) {
+    
+    for (int i = 0; i < std::min<int>(1600, nn[k].size()); i++) {
       const auto color = nn[k][i].first;
       const auto count = nn[k][i].second;
       const auto image = index_to_string[color];
-      double score =
-          static_cast<double>(count) / static_cast<double>(query.cols());
-      if (score == 0) score = 0.00000000001;
+      
+      // ===== CHUYỂN TỪ SIMILARITY SANG DISTANCE =====
+      // count là tổng Chamfer similarity (0 -> num_features)
+      // similarity càng lớn càng giống
+      // distance = 1 - similarity
+      double similarity = static_cast<double>(count) / static_cast<double>(query.cols());
+      double score = 1.0 - similarity;  // distance: 0 = giống nhất, 1 = khác nhất
+      
+      // Đảm bảo score trong [0, 1]
+      if (score < 0) score = 0;
+      if (score > 1) score = 1;
+      if (score == 0) score = 0.00000000001;  // Tránh chia cho 0 trong MDS
+      
       pairs.push_back({.query = query_string, .target = image, .score = score});
     }
   }

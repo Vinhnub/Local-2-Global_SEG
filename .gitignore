@@ -228,8 +228,17 @@ __marimo__/
 /data/datasets/roxford5k/jpg
 /data/datasets/rparis6k/jpg
 
+/cann_data/roxford5k/database
+/cann_data/rparis6k/database
+
+/cann_data/roxford5k/query
+/cann_data/rparis6k/query
+
 /data/feature/fire/rparis6k/database
 /data/feature/fire/rparis6k/query
 
 /data/feature/fire/roxford5k/database
-/data/feature/fire/rparis6k/query
+/data/feature/fire/roxford5k/query
+
+/index_output
+/query_results

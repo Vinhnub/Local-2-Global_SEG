@@ -7,6 +7,7 @@ cc_library(
     deps = [
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/container:node_hash_map",
@@ -32,6 +33,7 @@ cc_library(
         "-O3",
         "-march=native",
     ],
+    # KHÔNG CÓ linkopts
 )
 
 cc_binary(
@@ -43,4 +45,5 @@ cc_binary(
         "-O3",
         "-march=native",
     ],
+    # KHÔNG CÓ linkopts
 )
