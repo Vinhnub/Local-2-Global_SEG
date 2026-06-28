@@ -11,10 +11,10 @@
 2. [Nền tảng lý thuyết](#2-nền-tảng-lý-thuyết)
 3. [Kiến trúc Pipeline](#3-kiến-trúc-pipeline)
 4. [Bộ dữ liệu (Datasets)](#4-bộ-dữ-liệu)
-5. [STAGE 1A — Local Features (FIRe / ResNet-50)](#5-stage-1a--local-features)
-6. [STAGE 1B — Global Features (CVNet-R101)](#6-stage-1b--global-features)
-7. [STAGE 2 — Chamfer Distance Base Search](#7-stage-2--chamfer-distance-base-search)
-8. [STAGE 3 — MDS + Fusion + SuperGlobal Re-ranking](#8-stage-3--mds--fusion--re-ranking)
+5. [STAGE 1 - Local Features (FIRe / ResNet-50)](#5-stage-1--local-features)
+6. [STAGE 2 - Global Features (CVNet-R101)](#6-stage-2--global-features)
+7. [(Đã gộp vào Stage 3 - Không còn bước này độc lập)](#7-đa-gop-vao-stage-3)
+8. [STAGE 3 - Global CVNet Base Search + MDS + Fusion + Graph Diffusion](#8-stage-3--global-cvnet-base-search--mds--fusion--graph-diffusion)
 9. [Cách tính mAP](#9-cách-tính-map)
 10. [Cấu trúc thư mục dự án](#10-cấu-trúc-thư-mục-dự-án)
 11. [Hướng dẫn sử dụng từng bước](#11-hướng-dẫn-sử-dụng-từng-bước)
@@ -158,7 +158,7 @@ FIRe tìm 600 điểm đặc trưng quan trọng nhất trong ảnh và mô tả
 
 ### 2.3 Chamfer Distance — So sánh 2 tập hợp vectors
 
-Khi mỗi ảnh có 600 vectors (keypoints), ta không thể dùng cosine similarity thông thường. Thay vào đó, dùng **Chamfer Distance**:
+Khi mỗi ảnh có 600 vectors (keypoints), ta không thể dùng cosine similarity thông thường. Thay vì đó, dùng **Chamfer Distance**:
 
 ```
 Ảnh Q = {q1, q2, ..., q600}   (600 local descriptors)
@@ -470,7 +470,7 @@ gnd = {
 
 ---
 
-## 5. STAGE 1A — Local Features
+## 5. STAGE 1 - Local Features
 
 ### 5.1 File: `src/stage1/local_extractor.py` (307 dòng)
 
@@ -599,7 +599,7 @@ output/stage1/features/
 Tổng: ~3.5 GB
 ```
 
-#### Cách chạy Stage 1A
+#### Cách chạy Stage 1
 
 ```bash
 conda activate cvdl
@@ -648,7 +648,7 @@ SUMMARY:
 
 ---
 
-## 6. STAGE 1B — Global Features
+## 6. STAGE 2 - Global Features
 
 ### 6.1 File: `src/stage1b_extract_global.py` (112 dòng)
 
@@ -764,7 +764,7 @@ output/stage1b/features/
 Tổng: ~90MB (nhỏ hơn stage1 ~40 lần)
 ```
 
-#### Cách chạy Stage 1B
+#### Cách chạy Stage 2
 
 ```bash
 python src/stage1b_extract_global.py
@@ -788,7 +788,7 @@ Extracting CVNet-R101 features for rparis6k...
 
 ---
 
-## 7. STAGE 2 — Chamfer Distance Base Search
+## 7. (Đã gộp vào Stage 3 - Không còn bước này độc lập)
 
 ### 7.1 Mục đích và chiến lược
 
@@ -898,7 +898,7 @@ sg_candidate_names = all_candidate_names_sorted[:1600]  # Top-1600 (cho SuperGlo
 
 ---
 
-## 8. STAGE 3 — MDS + Fusion + Re-ranking
+## 8. STAGE 3 - Global CVNet Base Search + MDS + Fusion + Graph Diffusion
 
 ### 8.1 File: `src/stage3_rerank.py` (517 dòng)
 
