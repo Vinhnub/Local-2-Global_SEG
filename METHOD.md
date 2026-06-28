@@ -1990,3 +1990,10 @@ mAP Easy / Medium / Hard → Compare with paper
 *Mọi số liệu kết quả đã được verify và khớp với paper State-of-the-Art.*
 
 **© 2026 — Local-to-Global Image Retrieval Pipeline Documentation**
+
+### 8.10 Tại sao không dùng MDA (Multiple Descriptor Aggregation) của SuperGlobal?
+Trong bài báo SuperGlobal gốc, tác giả có thiết kế thêm một module gọi là **MDA (Multiple Descriptor Aggregation)** (trong file RerankwMDA.py) để gom nhóm các đặc trưng cục bộ (đôi khi dùng chung khái niệm GEM / spatial aware).
+Tuy nhiên, trong kiến trúc **Local-to-Global (L2G)** của chúng ta:
+1. Mình **KHÔNG SỬ DỤNG MDA**.
+2. Mình chỉ sử dụng duy nhất phần **Graph Diffusion (MDescAug)** để lan truyền trọng số trên đồ thị k-NN của ma trận F_concat.
+3. Bằng chứng là hàm superglobal_reranking_full() của chúng ta chỉ thực hiện Graph Diffusion (nhân ma trận W) chứ không hề có bước MDA phía sau. Việc cắt bỏ này giúp pipeline nhẹ hơn rất nhiều mà vẫn giữ được mAP tối đa (81.69%) nhờ đặc trưng Local (FIRe) kết hợp Global (CVNet) đã quá xuất sắc!
