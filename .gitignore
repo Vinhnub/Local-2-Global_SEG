@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.env/
+env/
+
+# Data and Models
+data/
+output/
+fire/model/
+CVNet/models/
+
+# PyTorch Lightning or tensorboard logs
+lightning_logs/
+runs/
+
+# IDE config
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Heavy weights in root
+*.pyth
+*.pth
+*.pkl

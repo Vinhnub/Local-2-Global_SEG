@@ -1,0 +1,22 @@
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "colored_c_nn",
+    srcs = glob(["*.cc"]),
+    hdrs = glob(["*.h"]),
+    deps = [
+        "@eigen//:eigen",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/container:flat_hash_map",
+    ],
+)
+
+cc_binary(
+    name = "colored_c_nn_random_grids_index_main",
+    srcs = ["colored_c_nn_random_grids_index_main.cc"],
+    deps = [
+        ":cann_lib",
+        "@com_google_absl//absl/base:base",  # Thêm dòng này
+        "@com_google_absl//absl/strings",     # Thêm dòng này
+    ],
+)
