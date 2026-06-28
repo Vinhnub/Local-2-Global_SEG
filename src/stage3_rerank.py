@@ -347,38 +347,39 @@ def main():
         warnings.filterwarnings("ignore", category=FutureWarning)
         warnings.filterwarnings("ignore", category=UserWarning)
 
-        # --- LOAD ENTIRE DB LOCAL FEATURES ---
-        print("Loading all Database local features into memory for Exact Chamfer Base Search...")
-        db_local_feats = []
+        # --- LOAD ENTIRE DB GLOBAL FEATURES ---
+        print("Loading all Database global features into memory for Exact Global Base Search...")
+        db_global_feats = []
         for img in imlist:
-            feat_path = BASE_DIR / "output" / "stage1" / "features" / dataset / "database" / f"{img}.npy"
-            feat = load_feature_file(feat_path)
-            if feat is None:
-                feat = torch.zeros((600, 128))
-            db_local_feats.append(feat)
-        print(f"Loaded {len(db_local_feats)} DB features.")
+            feat_path = BASE_DIR / "output" / "stage2" / "features" / dataset / "database" / f"{img}.npy"
+            if feat_path.exists():
+                feat = np.load(feat_path)
+            else:
+                feat = np.zeros(2048)
+            # L2 normalize
+            norm_val = np.linalg.norm(feat)
+            feat = feat / norm_val if norm_val > 1e-6 else np.zeros(2048)
+            db_global_feats.append(feat)
+        db_global_feats = np.array(db_global_feats) # (db_size, 2048)
+        print(f"Loaded {len(db_global_feats)} DB global features.")
         
         # Process each query in ground truth order
-        print("\nRunning Exact Chamfer Base Search, MDS & Re-ranking for each query...")
+        print("\nRunning Exact Global Base Search, MDS & Re-ranking for each query...")
         for q_idx, q_name in enumerate(qimlist):
             if (q_idx + 1) % 1 == 0:
                 print(f"  Query {q_idx+1}/{nq}: {q_name}")
                 
-            feat_path = BASE_DIR / "output" / "stage1" / "features" / dataset / "query" / f"{q_name}.npy"
-            query_feat = load_feature_file(feat_path)
-            if query_feat is None:
-                query_feat = torch.zeros((600, 128))
-                
-            # EXACT CHAMFER BASE SEARCH (With Caching)
-            cache_dir = OUTPUT_DIR / "base_scores" / dataset
-            cache_dir.mkdir(parents=True, exist_ok=True)
-            score_cache_path = cache_dir / f"{q_name}.npy"
-            
-            if score_cache_path.exists():
-                base_scores = np.load(score_cache_path)
+            # Load Query Global Feature
+            q_global_path = BASE_DIR / "output" / "stage2" / "features" / dataset / "query" / f"{q_name}.npy"
+            if q_global_path.exists():
+                query_global_feat = np.load(q_global_path)
             else:
-                base_scores = compute_chamfer_query_to_db(query_feat, db_local_feats, device)
-                np.save(score_cache_path, base_scores)
+                query_global_feat = np.zeros(2048)
+            norm_val = np.linalg.norm(query_global_feat)
+            query_global_feat = query_global_feat / norm_val if norm_val > 1e-6 else np.zeros(2048)
+                
+            # EXACT GLOBAL BASE SEARCH
+            base_scores = np.dot(db_global_feats, query_global_feat) # (db_size,)
                 
             all_sorted_indices = np.argsort(-base_scores)
             all_candidate_names_sorted = [imlist[i] for i in all_sorted_indices]
@@ -436,21 +437,14 @@ def main():
             # ==========================================
             # 1. Get the names of the M_sg candidates (1600 candidates)
             sg_candidate_names = all_candidate_names_sorted[:M_sg]
-            full_sg_names = [q_name] + sg_candidate_names
             
             F_global = []
-            for i, img_name in enumerate(full_sg_names):
-                sub_dir = "query" if i == 0 else "database"
-                feat_path = BASE_DIR / "output" / "stage2" / "features" / dataset / sub_dir / f"{img_name}.npy"
-                if feat_path.exists():
-                    glob = np.load(feat_path) # (2048,)
-                else:
-                    glob = np.zeros(2048)
-                
-                # L2 normalize
-                norm_val = np.linalg.norm(glob)
-                glob_norm = glob / norm_val if norm_val > 1e-6 else np.zeros(2048)
-                F_global.append(glob_norm)
+            F_global.append(query_global_feat)
+            
+            # We already have db_global_feats in memory, so just fetch by index
+            db_name_to_idx = {name: idx for idx, name in enumerate(imlist)}
+            for img_name in sg_candidate_names:
+                F_global.append(db_global_feats[db_name_to_idx[img_name]])
                 
             F_global = np.array(F_global) # (1601, 2048)
             
