@@ -6,27 +6,38 @@ import torchvision.transforms as transforms
 import math
 from pathlib import Path
 import sys
-
+BASE_DIR = ''
 # Add src to pythonpath
 sys.path.append(os.path.join(str(BASE_DIR), 'src', 'core', 'SuperGlobal-main'))
 
 from model.CVNet_Rerank_model import CVNet_Rerank
 
-BASE_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent.parent.parent
+
 
 def extract_dataset(dataset_name, model, device):
     print(f"Extracting CVNet-R101 features for {dataset_name}...")
     
     # Paths
-    img_dir = BASE_DIR / "data" / "datasets" / dataset_name / "jpg"
-    out_dir_q = BASE_DIR / "output" / "stage2" / "features" / dataset_name / "query"
-    out_dir_db = BASE_DIR / "output" / "stage2" / "features" / dataset_name / "database"
-    
-    out_dir_q.mkdir(parents=True, exist_ok=True)
-    out_dir_db.mkdir(parents=True, exist_ok=True)
+    img_dir = os.path.join(str(BASE_DIR), "data", "datasets", dataset_name, "jpg")
+
+    out_dir_q = os.path.join(
+        str(BASE_DIR), "output", "stage2", "features", dataset_name, "query"
+    )
+
+    out_dir_db = os.path.join(
+        str(BASE_DIR), "output", "stage2", "features", dataset_name, "database"
+    )
+
+    os.makedirs(out_dir_q, exist_ok=True)
+    os.makedirs(out_dir_db, exist_ok=True)
     # Lists
-    q_list_path = BASE_DIR / "google-research" / "cann" / f"{dataset_name}_query_names.txt"
-    db_list_path = BASE_DIR / "google-research" / "cann" / f"{dataset_name}_database_names.txt"
+    q_list_path = os.path.join(
+    str(BASE_DIR), "google-research", "cann", f"{dataset_name}_query_names.txt"
+)
+
+    db_list_path = os.path.join(
+        str(BASE_DIR), "google-research", "cann", f"{dataset_name}_database_names.txt"
+    )
     
     with open(q_list_path, "r") as f:
         q_names = [line.strip() for line in f if line.strip()]
@@ -40,8 +51,12 @@ def extract_dataset(dataset_name, model, device):
     
     # Find all images recursively and map stem to path
     img_path_map = {}
-    for p in img_dir.rglob("*.jpg"):
-        img_path_map[p.stem] = p
+
+    for root, dirs, files in os.walk(img_dir):
+        for file in files:
+            if file.lower().endswith(".jpg"):
+                stem = os.path.splitext(file)[0]
+                img_path_map[stem] = os.path.join(root, file)
         
     scale = 3
     
@@ -60,7 +75,8 @@ def extract_dataset(dataset_name, model, device):
                 feat = model.extract_global_descriptor(img_tensor, True, True, True, scale)
                 feat = feat.cpu().numpy().squeeze() # (2048,)
                 
-            np.save(out_dir / f"{img_name}.npy", feat)
+            np.save(os.path.join(out_dir, f"{img_name}.npy"), feat)
+            print (f"Extracted {img_name} to {out_dir}")
         except Exception as e:
             print(f"Error processing {img_name}: {e}")
 
@@ -82,7 +98,7 @@ def main():
     model = CVNet_Rerank(RESNET_DEPTH=101, REDUCTION_DIM=2048, relup=False)
     
     # Load weights
-    weight_path = BASE_DIR / "model_weights" / "CVPR2022_CVNet_R101.pyth"
+    weight_path = BASE_DIR + "model_weights" + '/' + "CVPR2022_CVNet_R101.pyth"
     print(f"Loading weights from {weight_path}...")
     state_dict = torch.load(weight_path, map_location='cpu')
     if 'model_state' in state_dict:
@@ -104,7 +120,7 @@ def main():
     model = model.to(device)
     model.eval()
     
-    extract_dataset("roxford5k", model, device)
+    #extract_dataset("roxford5k", model, device)
     extract_dataset("rparis6k", model, device)
 
 if __name__ == "__main__":

@@ -202,7 +202,7 @@ def main():
     p = 0.01
     w_local = 0.19
     w_global = 0.81
-    k_candidates = 1600
+    k_candidates = 700
     M_sg = 1600
     k_sg = 6
     beta_sg = 0.31
@@ -257,6 +257,14 @@ def main():
         vecs = np.vstack(db_local_feats).astype(np.float32)
         imids = np.hstack(db_imids).astype(np.int32)
         
+        sparse_sim_path = OUTPUT_DIR / f"{dataset}_sparse_sim.pkl"
+        print(f"Loading sparse similarity index from {sparse_sim_path}...")
+        if not sparse_sim_path.exists():
+            print(f"ERROR: Sparse index {sparse_sim_path} not found! Please run build_index.py first.")
+            return
+        with open(sparse_sim_path, 'rb') as f:
+            sparse_sim = pickle.load(f)
+            
         print("Initializing ASMK Method for SUPER FAST execution...")
         asmk_method = ASMKMethod.initialize_untrained(asmk_params)
         
@@ -314,19 +322,38 @@ def main():
             sg_candidate_names = all_candidate_names_sorted[:M_sg]
             
             # 2. Local Similarity Matrix for 701 images
-            local_set_names = [q_name] + candidate_names
+            k = len(candidate_names)
+            W_local = np.zeros((k+1, k+1), dtype=np.float32)
             
-            sub_vecs = []
-            sub_vecs.append(torch.from_numpy(q_feat))
-            for i, db_idx in enumerate(all_sorted_indices[:k_candidates]):
-                feat = db_local_feats[db_idx]
-                sub_vecs.append(torch.from_numpy(feat))
-                
-            feat_tensor = torch.stack(sub_vecs).to(device).float()
-            S_local = compute_chamfer_matrix_pytorch(feat_tensor, device).cpu().numpy()
+            # (a) Compute Exact Chamfer for Query vs top-K
+            cand_indices = all_sorted_indices[:k]
+            cand_feats = [db_local_feats[idx] for idx in cand_indices]
             
-            # Symmetrize
-            W_local = (S_local + S_local.T) / 2.0
+            q = torch.tensor(q_feat).unsqueeze(0).to(device)
+            db = torch.tensor(np.stack(cand_feats)).to(device)
+            q = q / torch.norm(q, dim=2, keepdim=True).clamp(min=1e-6)
+            db = db / torch.norm(db, dim=2, keepdim=True).clamp(min=1e-6)
+            
+            dot_products = torch.matmul(q, db.transpose(1, 2))
+            S_q_db = dot_products.max(dim=2).values.mean(dim=1)
+            S_db_q = dot_products.max(dim=1).values.mean(dim=1)
+            q_sims = ((S_q_db + S_db_q) / 2.0).cpu().numpy()
+            
+            W_local[0, 1:] = q_sims
+            W_local[1:, 0] = q_sims
+            
+            # (b) Lookup sparse index for candidate vs candidate
+            for r in range(k):
+                idx_r = cand_indices[r]
+                for c in range(r, k):
+                    idx_c = cand_indices[c]
+                    if idx_r == idx_c:
+                        sim_val = 1.0
+                    else:
+                        sim_val = sparse_sim.get(idx_r, {}).get(idx_c, 0.0)
+                    
+                    W_local[r+1, c+1] = sim_val
+                    W_local[c+1, r+1] = sim_val
             
             # Convert ASMK similarity W_local to distance D_mod
             max_sim = np.max(W_local)

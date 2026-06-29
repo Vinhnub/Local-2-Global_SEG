@@ -20,7 +20,53 @@ def cann_search(q_feats, db_feats, k_candidates=1600, dim=128):
     cann_exe = os.path.join(project_root, "google-research", "cann", "bazel-bin", "main", "colored_c_nn_random_grids_index_main.exe")
     
     if not os.path.exists(cann_exe):
-        raise FileNotFoundError(f"CANN executable not found at: {cann_exe}")
+        print(f"CANN executable not found at: {cann_exe}")
+        print("Falling back to exact PyTorch Chamfer search (this is completely accurate and runs on GPU)...")
+        import torch
+        try:
+            from tqdm import tqdm
+        except ImportError:
+            tqdm = lambda x, **kwargs: x
+            
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+        # Keep full db on CPU to save VRAM, only move batches to GPU
+        db_tensor_cpu = torch.tensor(np.stack(db_feats))
+        db_tensor_cpu = db_tensor_cpu / torch.norm(db_tensor_cpu, dim=2, keepdim=True).clamp(min=1e-6)
+        
+        ranks = []
+        batch_size = 200 # Small batch size to ensure minimal VRAM usage (less than 1GB)
+        for i, q_feat in enumerate(tqdm(q_feats, desc="PyTorch Base Search")):
+            q = torch.tensor(q_feat).unsqueeze(0).to(device)
+            q = q / torch.norm(q, dim=2, keepdim=True).clamp(min=1e-6)
+            
+            sims_list = []
+            for start_idx in range(0, len(db_feats), batch_size):
+                end_idx = min(start_idx + batch_size, len(db_feats))
+                db_batch = db_tensor_cpu[start_idx:end_idx].to(device)
+                
+                dot_products = torch.matmul(q, db_batch.transpose(1, 2))
+                S_q_db = dot_products.max(dim=2).values.mean(dim=1)
+                S_db_q = dot_products.max(dim=1).values.mean(dim=1)
+                sims_batch = ((S_q_db + S_db_q) / 2.0)
+                sims_list.append(sims_batch)
+                
+            sims = torch.cat(sims_list)
+            
+            topk = torch.topk(sims, k=min(k_candidates, len(db_feats)))
+            cand_indices = topk.indices.cpu().numpy().tolist()
+            
+            if len(cand_indices) < k_candidates:
+                existing = set(cand_indices)
+                for j in range(len(db_feats)):
+                    if len(cand_indices) >= k_candidates:
+                        break
+                    if j not in existing:
+                        cand_indices.append(j)
+                        
+            ranks.append(cand_indices)
+            
+        return np.array(ranks)
         
     with tempfile.TemporaryDirectory() as tmpdir:
         # Create directories for query and index descriptors

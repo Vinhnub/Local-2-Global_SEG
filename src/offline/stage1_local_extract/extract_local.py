@@ -4,10 +4,10 @@ import importlib.util
 
 # Tự động nhận diện đường dẫn dự án
 script_dir = os.path.dirname(os.path.abspath(__file__)) # Local-2-Global_SEG/src
-project_root = os.path.dirname(script_dir) # Local-2-Global_SEG
+project_root = '' # Local-2-Global_SEG
 
 fire_path = os.path.join(project_root, "fire")
-
+print(os.path.join(fire_path, "dataset.py"))
 spec = importlib.util.spec_from_file_location("dataset", os.path.join(fire_path, "dataset.py"))
 dataset = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(dataset)
