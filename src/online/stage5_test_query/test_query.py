@@ -39,8 +39,8 @@ from sklearn.manifold import MDS
 DATASET = "roxford5k" # Use roxford5k as default database
 k_candidates = 100
 M_sg = 100
-w_local = 0.5
-w_global = 0.5
+w_local = 0.19
+w_global = 0.81
 k_sg = 6
 beta_sg = 0.31
 

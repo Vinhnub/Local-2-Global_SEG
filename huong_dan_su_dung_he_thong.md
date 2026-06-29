@@ -82,7 +82,7 @@ Sức mạnh ma thuật của hệ thống nằm ở khâu kết hợp Stage 4 /
 2. **Dung hợp (Fusion) bằng Đa Hướng (MDS):**
    Ma trận $S_{local}$ khá rối rắm, nên toán học áp dụng MDS (Multi-Dimensional Scaling) ép ma trận đó về lại vector 128 chiều (Gọi là $F_{mds}$).
    Nối nó với vector Toàn cảnh của CVNet ($F_{global}$):
-   $$ F_{concat} = [ \sqrt{0.5} \times F_{mds}, \sqrt{0.5} \times F_{global} ] $$
+   $$ F_{concat} = [ \sqrt{0.19} \times F_{mds}, \sqrt{0.81} \times F_{global} ] $$
 
 3. **Truyền Lan Đồ Thị (SuperGlobal Graph):**
    Thay vì chỉ sắp xếp kết quả, hệ thống xây một mạng lưới.
