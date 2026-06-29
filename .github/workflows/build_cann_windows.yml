@@ -1,0 +1,24 @@
+name: Build CANN Windows
+on:
+  push:
+    branches: [ "master", "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Bazelisk
+        uses: bazelbuild/setup-bazelisk@v3
+
+      - name: Build CANN
+        working-directory: google-research/cann
+        run: bazel build -c opt main:colored_c_nn_random_grids_index_main
+        
+      - name: Upload CANN EXE Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cann-windows-exe
+          path: google-research/cann/bazel-bin/main/colored_c_nn_random_grids_index_main.exe
