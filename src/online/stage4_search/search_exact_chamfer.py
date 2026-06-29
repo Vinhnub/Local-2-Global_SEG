@@ -182,7 +182,9 @@ def compute_chamfer_matrix_pytorch(feat_tensor, device):
         S[i] = max_sim.mean(dim=1)
     return S
 
-def main():
+import argparse
+
+def main(backend="auto"):
     CANN_DATA = BASE_DIR / "google-research" / "cann"
     DATASETS_DIR = BASE_DIR / "data" / "datasets"
     OUTPUT_DIR = BASE_DIR / "output" / "stage3"
@@ -270,10 +272,13 @@ def main():
                 q_feat = np.zeros((600, 128), dtype=np.float32)
             q_local_feats.append(q_feat)
             
-        print("Running CANN Base Search...")
-        t0 = time.time()
-        cann_ranks = cann_search(q_local_feats, db_local_feats, k_candidates=max(M_sg, k_candidates))
-        print(f"CANN search finished in {time.time() - t0:.1f}s", flush=True)
+        # 4. PERFORM BASE SEARCH
+        print(f"[{dataset}] Executing Base Search (Backend: {backend})...")
+        t_start = time.time()
+        
+        # We search with cann_search wrapper which will use PyTorch fallback or CANN
+        cann_ranks = cann_search(q_local_feats, db_local_feats, k_candidates=max(M_sg, k_candidates), dim=128, backend=backend)
+        print(f"CANN search finished in {time.time() - t_start:.1f}s", flush=True)
         
         print(f"\nRunning MDS & Re-ranking for {nq} queries...", flush=True)
         t_start = time.time()
@@ -403,4 +408,8 @@ def main():
     print("\nSTAGE 3 EXECUTION COMPLETE!")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Run Exact Chamfer Search")
+    parser.add_argument('--backend', type=str, choices=['auto', 'cann', 'pytorch'], default='auto', help='Base search backend (auto, cann, pytorch)')
+    args = parser.parse_args()
+    
+    main(backend=args.backend)

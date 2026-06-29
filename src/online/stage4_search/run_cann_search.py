@@ -3,15 +3,16 @@ import subprocess
 import tempfile
 import numpy as np
 
-def cann_search(q_feats, db_feats, k_candidates=1600, dim=128):
+def cann_search(q_feats, db_feats, k_candidates=1600, dim=128, backend="auto"):
     """
-    Sử dụng CANN (google-research/cann) để thực hiện Base Search.
+    Sử dụng CANN (google-research/cann) hoặc PyTorch để thực hiện Base Search.
     
     Args:
         q_feats: list of query feature arrays (shape N x 128)
         db_feats: list of database feature arrays (shape M x 128)
         k_candidates: số lượng ứng viên cần trả về
         dim: số chiều đặc trưng (128 cho FIRe)
+        backend: "auto", "cann", hoặc "pytorch"
         
     Returns:
         ranks: mảng numpy chứa index của top K ứng viên cho mỗi query.
@@ -19,9 +20,22 @@ def cann_search(q_feats, db_feats, k_candidates=1600, dim=128):
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     cann_exe = os.path.join(project_root, "google-research", "cann", "bazel-bin", "main", "colored_c_nn_random_grids_index_main.exe")
     
-    if not os.path.exists(cann_exe):
-        print(f"CANN executable not found at: {cann_exe}")
-        print("Falling back to exact PyTorch Chamfer search (this is completely accurate and runs on GPU)...")
+    use_pytorch = False
+    if backend == "pytorch":
+        use_pytorch = True
+    elif backend == "cann":
+        if not os.path.exists(cann_exe):
+            raise FileNotFoundError(f"CANN executable not found at: {cann_exe}. Please compile it or use backend='pytorch'")
+        use_pytorch = False
+    else: # auto
+        if not os.path.exists(cann_exe):
+            print(f"CANN executable not found at: {cann_exe}")
+            print("Falling back to exact PyTorch Chamfer search (this is completely accurate and runs on GPU)...")
+            use_pytorch = True
+        else:
+            use_pytorch = False
+            
+    if use_pytorch:
         import torch
         try:
             from tqdm import tqdm

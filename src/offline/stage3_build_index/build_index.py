@@ -46,7 +46,7 @@ def compute_symmetric_chamfer(q_feat, cand_feats, device):
     
     return ((S_q_db + S_db_q) / 2.0).cpu().numpy()
 
-def build_index(dataset_name, project_root):
+def build_index(dataset_name, project_root, backend="auto"):
     base_dir = Path(project_root) / 'output' / 'stage1' / 'features' / dataset_name
     db_dir = base_dir / 'database'
     print(db_dir)
@@ -74,9 +74,9 @@ def build_index(dataset_name, project_root):
         db_local_feats.append(feat)
 
     k_candidates = 701 # top-k nearest index images + itself
-    print(f"Running CANN search (Offline DB vs DB) for top-{k_candidates} candidates...")
+    print(f"Running CANN search to get top {k_candidates} candidates for each image (Backend: {backend})...")
     t0 = time.time()
-    cann_ranks = cann_search(db_local_feats, db_local_feats, k_candidates=k_candidates)
+    cann_ranks = cann_search(db_local_feats, db_local_feats, k_candidates=k_candidates, backend=backend)
     print(f"CANN search finished in {time.time() - t0:.1f}s")
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -129,5 +129,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Build Sparse Similarity Index of FIRe features')
     parser.add_argument('--dataset', default='roxford5k', help='Dataset name (e.g., roxford5k or rparis6k)')
     parser.add_argument('--project_root', default=str(BASE_DIR), help='Root directory of the project')
+    parser.add_argument('--backend', type=str, choices=['auto', 'cann', 'pytorch'], default='auto', help="Backend tool for Base Search")
     args = parser.parse_args()
-    build_index(args.dataset, args.project_root)
+    build_index(args.dataset, args.project_root, args.backend)

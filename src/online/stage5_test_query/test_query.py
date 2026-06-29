@@ -30,7 +30,8 @@ spec.loader.exec_module(dataset)
 # CVNet imports
 from model.CVNet_Rerank_model import CVNet_Rerank
 
-from asmk.asmk_method import ASMKMethod
+from src.online.stage4_search.run_cann_search import cann_search
+import pickle
 from sklearn.manifold import MDS
 
 # ---------------------------------------------------------
@@ -108,10 +109,11 @@ def superglobal_reranking_full(features, K=6, beta=0.31):
 # ---------------------------------------------------------
 # MAIN INFERENCE PIPELINE
 # ---------------------------------------------------------
-def main(query_image_path):
+def main(query_image_path, backend="auto"):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("="*50)
     print("INITIALIZING REAL-TIME SEARCH ENGINE (L2G)")
+    print(f"BACKEND: {backend}")
     print("="*50)
     
     # 1. INIT FIRe (Local)
@@ -159,28 +161,12 @@ def main(query_image_path):
     vecs = np.vstack(db_local_feats).astype(np.float32)
     imids = np.hstack(db_imids).astype(np.int32)
     
-    asmk_params = {
-        "index": {"gpu_id": 0},
-        "train_codebook": {"codebook": {"size": "64k"}},
-        "build_ivf": {
-            "kernel": {"binary": True},
-            "ivf": {"use_idf": False},
-            "quantize": {"multiple_assignment": 1},
-            "aggregate": {}
-        },
-        "query_ivf": {
-            "quantize": {"multiple_assignment": 5},
-            "aggregate": {},
-            "search": {"topk": None},
-            "similarity": {"similarity_threshold": 0.0, "alpha": 3.0}
-        }
-    }
-    asmk_method = ASMKMethod.initialize_untrained(asmk_params)
-    codebook_path = BASE_DIR / "output" / "stage3" / "asmk" / f"{DATASET}_codebook.pkl"
-    ivf_path = BASE_DIR / "output" / "stage3" / "asmk" / f"{DATASET}_ivf.pkl"
-    
-    asmk_method = asmk_method.train_codebook(None, cache_path=codebook_path)
-    asmk_dataset = asmk_method.build_ivf(None, None, cache_path=ivf_path)
+    print("Loading Sparse Index...")
+    sparse_index_path = BASE_DIR / "output" / "stage3" / f"sparse_distances_{DATASET}.pkl"
+    if not sparse_index_path.exists():
+        raise FileNotFoundError(f"Sparse index not found at {sparse_index_path}. Please run stage3 build_index first.")
+    with open(sparse_index_path, 'rb') as f:
+        sparse_distances = pickle.load(f)
     
     print("Engine Ready!")
     
@@ -217,15 +203,13 @@ def main(query_image_path):
         norm_val = np.linalg.norm(q_global_feat)
         if norm_val > 1e-6: q_global_feat = q_global_feat / norm_val
         
-    # C. ASMK Base Search
-    qvecs = q_local_feat.astype(np.float32)
-    qimids_arr = np.zeros(len(qvecs), dtype=np.int32)
-    print(f"DEBUG: qvecs shape = {qvecs.shape}, dtype = {qvecs.dtype}")
+    # C. Base Search
+    print(f"Running Base Search (Backend: {backend})...")
+    ranks = cann_search([q_local_feat], db_local_feats, k_candidates=1600, dim=128, backend=backend)
+    all_sorted_indices = ranks[0]
     
-    _, _, asmk_ranks, _ = asmk_dataset.query_ivf(qvecs, qimids_arr)
-    all_sorted_indices = asmk_ranks[0]
-    
-    candidate_names = [imlist[i] for i in all_sorted_indices[:k_candidates]]
+    k_candidates_local = 700
+    candidate_names = [imlist[i] for i in all_sorted_indices[:k_candidates_local]]
     sg_candidate_names = [imlist[i] for i in all_sorted_indices[:M_sg]]
     
     # Pad q_local_feat to 600x128 for stack
@@ -235,19 +219,49 @@ def main(query_image_path):
     elif q_local_feat.shape[0] > 600:
         q_local_feat = q_local_feat[:600]
         
-    # D. Exact Chamfer Local Matrix
-    sub_vecs = [torch.from_numpy(q_local_feat)]
-    for idx in all_sorted_indices[:k_candidates]:
-        sub_vecs.append(torch.from_numpy(db_local_feats[idx]))
-    feat_tensor = torch.stack(sub_vecs).to(device).float()
+    # D. Exact Chamfer Local Matrix (Using Sparse Lookup for candidates)
+    print("Computing Chamfer Distances (with Sparse Lookup)...")
+    q_tensor = torch.from_numpy(q_local_feat).unsqueeze(0).to(device).float()
+    cand_feats = torch.tensor(np.stack([db_local_feats[idx] for idx in all_sorted_indices[:k_candidates_local]])).to(device).float()
     
-    S_local = np.zeros((len(sub_vecs), len(sub_vecs)))
-    for row in range(len(sub_vecs)):
-        row_vec = feat_tensor[row:row+1].expand(len(sub_vecs), -1, -1)
-        dist = compute_chamfer_matrix_pytorch(row_vec, device=device)
-        S_local[row, :] = 1.0 - dist
-        
-    W_local = (S_local + S_local.T) / 2.0
+    # Compute Chamfer for Query vs Candidates
+    q_norm = q_tensor / torch.norm(q_tensor, dim=2, keepdim=True).clamp(min=1e-6)
+    cand_norm = cand_feats / torch.norm(cand_feats, dim=2, keepdim=True).clamp(min=1e-6)
+    
+    dot_products = torch.matmul(q_norm, cand_norm.transpose(1, 2))
+    S_q_db = dot_products.max(dim=2).values.mean(dim=1)
+    S_db_q = dot_products.max(dim=1).values.mean(dim=1)
+    q_cand_sims = ((S_q_db + S_db_q) / 2.0).cpu().numpy()[0]
+    
+    q_cand_dists = 1.0 - q_cand_sims
+    q_cand_dists = np.clip(q_cand_dists, 0.0, 1.0)
+    
+    # Build Distance Matrix (Query + 700 candidates)
+    D_local = np.ones((k_candidates_local + 1, k_candidates_local + 1))
+    np.fill_diagonal(D_local, 0.0)
+    
+    # Fill Query row and col
+    D_local[0, 1:] = q_cand_dists
+    D_local[1:, 0] = q_cand_dists
+    
+    # Fill Candidate-Candidate distances from Sparse Lookup
+    for i in range(k_candidates_local):
+        idx_i = all_sorted_indices[i]
+        for j in range(i + 1, k_candidates_local):
+            idx_j = all_sorted_indices[j]
+            
+            dist = 1.0
+            if idx_i in sparse_distances and idx_j in sparse_distances[idx_i]:
+                dist = sparse_distances[idx_i][idx_j]
+            elif idx_j in sparse_distances and idx_i in sparse_distances[idx_j]:
+                dist = sparse_distances[idx_j][idx_i]
+            
+            D_local[i+1, j+1] = dist
+            D_local[j+1, i+1] = dist
+            
+    # Convert distance to similarities
+    W_local = 1.0 - D_local
+    
     max_sim = np.max(W_local)
     W_norm = W_local / max_sim if max_sim > 0 else W_local
     D_mod = np.power(np.clip(1.0 - W_norm, 0.0, 1.0), 5)
@@ -299,5 +313,6 @@ def main(query_image_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--image', type=str, required=True, help="Path to query image")
+    parser.add_argument('--backend', type=str, choices=['auto', 'cann', 'pytorch'], default='auto', help="Backend tool for Base Search")
     args = parser.parse_args()
-    main(args.image)
+    main(args.image, args.backend)
