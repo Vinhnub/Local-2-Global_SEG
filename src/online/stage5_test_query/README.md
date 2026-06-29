@@ -43,6 +43,6 @@ Results saved to C:\Users\ezycloudx-admin\Desktop\seg\main\output_test
 ---
 
 ## 🧮 Cấu hình siêu tham số (Hyperparameters)
-- $K = 100$: Lọc ra 100 ứng viên ban đầu bằng ASMK.
+- $K = 1600$: Lọc ra 1600 ứng viên ban đầu bằng ASMK (Theo đúng cấu hình chuẩn của Paper để đạt mAP cao nhất).
 - Lưới trọng số Fusion: Trộn $w_{local} = 0.19$ và $w_{global} = 0.81$ (Theo chuẩn của Paper SuperGlobal) để đưa vào đồ thị.
 - Tham số lan truyền (Diffusion): $\beta = 0.31$ và kích thước đồ thị $k=6$ (Mỗi nút ảnh sẽ truyền điểm cho 6 hàng xóm gần nó nhất).

@@ -37,8 +37,8 @@ from sklearn.manifold import MDS
 # CONSTANTS & CONFIG
 # ---------------------------------------------------------
 DATASET = "roxford5k" # Use roxford5k as default database
-k_candidates = 100
-M_sg = 100
+k_candidates = 1600
+M_sg = 1600
 w_local = 0.19
 w_global = 0.81
 k_sg = 6
