@@ -1,0 +1,6 @@
+# 📂 Thư mục: `google-research/cann/bazel-cann/external/eigen/unsupported/Eigen/CXX11/src/TensorSymmetry`
+
+## 📌 Chức năng
+Thư mục này chứa mã nguồn gốc của các thư viện bên thứ 3 (Third-party libraries) được hệ thống sử dụng.
+
+⚠️ **Lưu ý:** Không chỉnh sửa code trong thư mục này để tránh phá vỡ thuật toán lõi.

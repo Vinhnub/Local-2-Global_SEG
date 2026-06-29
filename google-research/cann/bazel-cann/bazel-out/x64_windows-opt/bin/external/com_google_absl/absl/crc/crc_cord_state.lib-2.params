@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/crc/crc_cord_state.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/crc/_objs/crc_cord_state/crc_cord_state.obj
+/ignore:4221

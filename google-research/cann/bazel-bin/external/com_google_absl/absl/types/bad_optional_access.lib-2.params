@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/types/bad_optional_access.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/types/_objs/bad_optional_access/bad_optional_access.obj
+/ignore:4221

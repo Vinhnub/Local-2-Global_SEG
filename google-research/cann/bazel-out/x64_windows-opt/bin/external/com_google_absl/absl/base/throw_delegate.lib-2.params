@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/base/throw_delegate.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/base/_objs/throw_delegate/throw_delegate.obj
+/ignore:4221

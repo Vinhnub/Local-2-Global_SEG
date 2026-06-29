@@ -1,0 +1,16 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/synchronization.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/barrier.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/blocking_counter.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/create_thread_identity.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/futex_waiter.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/per_thread_sem.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/pthread_waiter.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/sem_waiter.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/stdcpp_waiter.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/waiter_base.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/win32_waiter.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/mutex.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/synchronization/notification.obj
+/ignore:4221

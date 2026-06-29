@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/flags/flag_internal.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/flags/_objs/flag_internal/flag.obj
+/ignore:4221

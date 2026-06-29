@@ -1,0 +1,6 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/container/hashtablez_sampler.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/container/_objs/hashtablez_sampler/hashtablez_sampler.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/container/_objs/hashtablez_sampler/hashtablez_sampler_force_weak_definition.obj
+/ignore:4221

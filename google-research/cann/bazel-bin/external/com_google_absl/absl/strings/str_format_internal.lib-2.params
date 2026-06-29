@@ -1,0 +1,10 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/str_format_internal.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/arg.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/bind.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/extension.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/float_conversion.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/output.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/parser.obj
+/ignore:4221

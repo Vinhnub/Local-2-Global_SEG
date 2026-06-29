@@ -1,0 +1,6 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/random/distributions.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/random/_objs/distributions/discrete_distribution.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/random/_objs/distributions/gaussian_distribution.obj
+/ignore:4221

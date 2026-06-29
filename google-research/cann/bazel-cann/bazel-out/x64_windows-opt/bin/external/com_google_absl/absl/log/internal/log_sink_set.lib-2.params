@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/log/internal/log_sink_set.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/log/internal/_objs/log_sink_set/log_sink_set.obj
+/ignore:4221

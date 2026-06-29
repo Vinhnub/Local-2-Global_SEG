@@ -1,0 +1,9 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/time.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/_objs/time/civil_time.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/_objs/time/clock.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/_objs/time/duration.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/_objs/time/format.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/_objs/time/time.obj
+/ignore:4221

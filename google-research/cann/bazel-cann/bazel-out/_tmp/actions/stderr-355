@@ -1,0 +1,5 @@
+cl : Command line warning D9002 : ignoring unknown option '-std=c++17'
+cl : Command line warning D9002 : ignoring unknown option '-O3'
+cl : Command line warning D9002 : ignoring unknown option '-std=c++17'
+cl : Command line warning D9002 : ignoring unknown option '-O3'
+cl : Command line warning D9002 : ignoring unknown option '-march=native'

@@ -1,0 +1,7 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/cord.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord/cord.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord/cord_analysis.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord/cord_buffer.obj
+/ignore:4221

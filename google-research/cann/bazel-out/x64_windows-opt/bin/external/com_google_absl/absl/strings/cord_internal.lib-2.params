@@ -1,0 +1,11 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/cord_internal.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord_internal/cord_internal.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord_internal/cord_rep_btree.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord_internal/cord_rep_btree_navigator.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord_internal/cord_rep_btree_reader.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord_internal/cord_rep_consume.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord_internal/cord_rep_crc.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/cord_internal/cord_rep_ring.obj
+/ignore:4221

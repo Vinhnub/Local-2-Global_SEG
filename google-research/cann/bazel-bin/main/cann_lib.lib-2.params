@@ -1,0 +1,9 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/main/cann_lib.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/main/_objs/cann_lib/cann_rg.obj
+bazel-out/x64_windows-opt/bin/main/_objs/cann_lib/colored_c_nn_random_grids_index.obj
+bazel-out/x64_windows-opt/bin/main/_objs/cann_lib/colored_c_nn_random_grids_index_main.obj
+bazel-out/x64_windows-opt/bin/main/_objs/cann_lib/int_mapping.obj
+bazel-out/x64_windows-opt/bin/main/_objs/cann_lib/thread_pool.obj
+/ignore:4221

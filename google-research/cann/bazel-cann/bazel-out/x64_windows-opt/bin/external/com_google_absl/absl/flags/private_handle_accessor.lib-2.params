@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/flags/private_handle_accessor.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/flags/_objs/private_handle_accessor/private_handle_accessor.obj
+/ignore:4221

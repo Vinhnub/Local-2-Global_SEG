@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/random/internal/pool_urbg.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/random/internal/_objs/pool_urbg/pool_urbg.obj
+/ignore:4221

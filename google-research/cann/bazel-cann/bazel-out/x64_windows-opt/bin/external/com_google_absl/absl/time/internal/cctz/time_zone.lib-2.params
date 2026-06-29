@@ -1,0 +1,13 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/time_zone.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_fixed.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_format.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_if.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_impl.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_info.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_libc.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_lookup.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_posix.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/zone_info_source.obj
+/ignore:4221

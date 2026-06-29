@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/kernel_timeout_internal.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/synchronization/_objs/kernel_timeout_internal/kernel_timeout.obj
+/ignore:4221

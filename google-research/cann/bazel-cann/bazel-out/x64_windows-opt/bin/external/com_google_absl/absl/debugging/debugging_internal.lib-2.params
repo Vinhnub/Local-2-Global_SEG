@@ -1,0 +1,7 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/debugging/debugging_internal.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/debugging/_objs/debugging_internal/address_is_readable.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/debugging/_objs/debugging_internal/elf_mem_image.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/debugging/_objs/debugging_internal/vdso_support.obj
+/ignore:4221

@@ -1,0 +1,7 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/internal.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/internal/escaping.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/internal/ostringstream.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/strings/_objs/internal/utf8.obj
+/ignore:4221

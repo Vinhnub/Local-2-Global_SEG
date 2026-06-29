@@ -1,0 +1,6 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/status/status.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/status/_objs/status/status.obj
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/status/_objs/status/status_payload_printer.obj
+/ignore:4221

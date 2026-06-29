@@ -1,0 +1,5 @@
+/nologo
+/OUT:bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/random/internal/randen_hwaes_impl.lib
+/MACHINE:X64
+bazel-out/x64_windows-opt/bin/external/com_google_absl/absl/random/internal/_objs/randen_hwaes_impl/randen_hwaes.obj
+/ignore:4221

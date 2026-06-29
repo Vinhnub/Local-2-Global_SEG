@@ -1,0 +1,53 @@
+--- main/cann_rg.cc.bak	2026-06-22 16:30:00.000000000 +0000
++++ main/cann_rg.cc	2026-06-22 16:30:00.000000000 +0000
+@@ -1,4 +1,5 @@
+ #include "main/cann_rg.h"
++#include "main/npy_reader.h"
+ 
+ #include <fstream>
+ #include <iostream>
+@@ -10,12 +11,24 @@
+ 
+ std::pair<std::vector<std::string>, std::vector<Eigen::MatrixXf>> ReadList(
+     const std::string& list_file, int dim) {
++  // Kiểm tra nếu là file .npy
++  if (list_file.find(".npy") != std::string::npos) {
++    std::vector<std::string> names;
++    std::vector<Eigen::MatrixXf> features;
++    Eigen::MatrixXf feat;
++    if (cann_rg::ReadNpyFile(list_file, &feat)) {
++      names.push_back(list_file);
++      features.push_back(feat);
++    }
++    return std::make_pair(names, features);
++  }
++  
+   std::ifstream file(list_file);
+   if (!file.is_open()) {
+     std::cerr << "Cannot open file: " << list_file << std::endl;
+     return std::make_pair(std::vector<std::string>(), std::vector<Eigen::MatrixXf>());
+   }
+-  
++
+   std::vector<std::string> ret_names;
+   std::vector<Eigen::MatrixXf> ret_features;
+   std::string name;
+@@ -30,13 +43,14 @@
+     file >> rows >> cols;
+     
+     // Đọc dữ liệu
+     std::vector<float> data(rows * cols);
+     file.read(reinterpret_cast<char*>(data.data()), rows * cols * sizeof(float));
+-    
++
+     Eigen::MatrixXf mat(rows, cols);
+     for (int i = 0; i < rows; i++) {
+       for (int j = 0; j < cols; j++) {
+         mat(i, j) = data[i * cols + j];
+       }
+     }
+-    
++
+     ret_names.push_back(name);
+     ret_features.push_back(mat);
+   }
