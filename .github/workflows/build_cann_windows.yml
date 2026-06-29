@@ -17,7 +17,7 @@ jobs:
         working-directory: google-research/cann
         shell: bash
         run: |
-          bazel build -c opt main:colored_c_nn_random_grids_index_main
+          bazel build --cxxopt=/std:c++20 -c opt main:colored_c_nn_random_grids_index_main
           cp bazel-bin/main/colored_c_nn_random_grids_index_main.exe cann-windows.exe
         
       - name: Upload CANN EXE Artifact
