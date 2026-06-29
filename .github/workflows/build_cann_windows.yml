@@ -15,10 +15,13 @@ jobs:
 
       - name: Build CANN
         working-directory: google-research/cann
-        run: bazel build -c opt main:colored_c_nn_random_grids_index_main
+        shell: bash
+        run: |
+          bazel build -c opt main:colored_c_nn_random_grids_index_main
+          cp bazel-bin/main/colored_c_nn_random_grids_index_main.exe cann-windows.exe
         
       - name: Upload CANN EXE Artifact
         uses: actions/upload-artifact@v4
         with:
           name: cann-windows-exe
-          path: google-research/cann/bazel-out/**/main/*.exe
+          path: google-research/cann/cann-windows.exe
