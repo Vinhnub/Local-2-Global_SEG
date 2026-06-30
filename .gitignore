@@ -242,3 +242,5 @@ __marimo__/
 
 /index_output
 /query_results
+/src/stage2/*.json
+/src/stage2/*.pth

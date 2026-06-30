@@ -32,12 +32,11 @@ def generate_distance_matrix(query_image, database, dataset_name='roxford5k', k=
 def embedding_query_candidate(matrix, query_image, candidates, feats, name2idx, device='cuda'):
     print("Distance matrix shape:", matrix.shape)
     
-    # 1. Chạy SMACOF cho Query và Top-K ứng viên (Ví dụ: 701 điểm)
     mds_embeddings = smacof(
         D_tensor=matrix,
         epsilon=0.1,  
-        max_iter=2000,  
-        n_components=2048,
+        max_iter=15,  
+        n_components=128,
         device=device
     )
     print("MDS Embeddings shape:", mds_embeddings.shape)
@@ -45,7 +44,6 @@ def embedding_query_candidate(matrix, query_image, candidates, feats, name2idx, 
     # Lấy k từ kích thước ma trận sinh ra MDS
     k = matrix.shape[0] - 1 
     
-    # 2. Lấy TẤT CẢ tên ảnh: [Query] + [Toàn bộ 1600 candidates]
     all_names = [query_image] + [c["db_name"] for c in candidates]
     
     sg_list = []
@@ -59,21 +57,21 @@ def embedding_query_candidate(matrix, query_image, candidates, feats, name2idx, 
             print(f"Cảnh báo: Không tìm thấy {name} trong đặc trưng SG. Dùng vector 0.")
             sg_list.append(torch.zeros(2048, dtype=torch.float32))
             
-    # Chuyển thành 1 Tensor chứa TOÀN BỘ đặc trưng SuperGlobal (Shape: 1601 x 2048)
     sg_tensor = torch.stack(sg_list).to(device)
     print("All SuperGlobal Tensor shape:", sg_tensor.shape)
     
-    # 3. KẾT HỢP (FUSION) CHỈ CHO TOP K
-    # Cắt lấy k+1 phần tử đầu tiên của sg_tensor để cộng với mds_embeddings
-    w = 0.19 
-    fused_top_k = (1 - w) * sg_tensor[:k+1] + w * mds_embeddings
-    
-    # 4. GIỮ NGUYÊN CHO CÁC ỨNG VIÊN CÒN LẠI
-    # Cắt từ vị trí k+1 đến hết
-    sg_remaining = sg_tensor[k+1:]
-    
-    # 5. NỐI LẠI THÀNH TENSOR CUỐI CÙNG
-    final_embeddings = torch.cat([fused_top_k, sg_remaining], dim=0)
+    w_local = 0.19 
+    w_global = 0.81
+
+    # Create full MDS embedding tensor
+    mds_full = torch.zeros((sg_tensor.shape[0], mds_embeddings.shape[1]), dtype=sg_tensor.dtype, device=device)
+    mds_full[:k+1] = mds_embeddings
+
+    # Combine using horizontal concatenation (dim=1) like in stage 4
+    final_embeddings = torch.cat([
+        float(np.sqrt(w_local)) * mds_full,
+        float(np.sqrt(w_global)) * sg_tensor
+    ], dim=1)
     print("Final Embeddings shape:", final_embeddings.shape)
     
     return final_embeddings
