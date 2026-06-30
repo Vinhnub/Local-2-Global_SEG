@@ -1,0 +1,40 @@
+name: Compile CANN for Windows
+
+on:
+  workflow_dispatch: # Cho phép bạn bấm nút chạy bằng tay trên web GitHub
+  push:
+    paths:
+      - 'google-research/cann/**' # Chỉ tự động chạy khi code trong thư mục CANN thay đổi
+
+jobs:
+  build-windows:
+    name: Build CANN on Windows
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Bazel
+      uses: bazelbuild/setup-bazelisk@v3
+
+    - name: Mount Bazel Cache (Tăng tốc độ cho các lần build sau)
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/bazel
+        key: bazel-${{ runner.os }}-${{ hashFiles('google-research/cann/WORKSPACE') }}
+        restore-keys: |
+          bazel-${{ runner.os }}-
+
+    - name: Build CANN (Biên dịch C++ thành .exe)
+      working-directory: google-research/cann
+      run: |
+        bazel build -c opt //main:colored_c_nn_random_grids_index_main
+        
+    - name: Upload CANN Executable (Tải file .exe lên GitHub)
+      uses: actions/upload-artifact@v4
+      with:
+        name: cann-windows-exe
+        path: google-research/cann/bazel-bin/main/colored_c_nn_random_grids_index_main.exe
+        retention-days: 30 # Giữ file trên GitHub trong vòng 30 ngày

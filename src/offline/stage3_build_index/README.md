@@ -1,41 +1,24 @@
-# 📚 Stage 3: ASMK Index Building (Offline)
+# Stage 3: Build Index (Xây dựng Từ điển Khoảng cách)
 
-## 📌 Chức năng (What it does)
-Xây dựng "Từ điển Hình ảnh" bằng thuật toán ASMK (Aggregated Selective Match Kernel) từ hàng triệu vector cục bộ thu được ở Stage 1.
-Tại sao phải làm bước này? Vì nếu Query so sánh trực tiếp với 1 triệu ảnh, nó phải tính $1,000,000 \times 600 \times 600$ phép nhân, mất hàng tháng trời. ASMK sẽ biến việc tìm kiếm giống như bạn "tra từ điển tiếng anh", tìm 1 phát ra ngay đáp án trong 0.05 giây!
+## 📌 Chức năng
+Stage 3 là bước chuẩn bị cuối cùng (Offline) trước khi hệ thống có thể tìm kiếm.
+Vì việc tính toán Chamfer Distance (khoảng cách giữa 600 vector của 2 bức ảnh) là cực kỳ tốn kém, Stage 3 sẽ tính toán trước toàn bộ khoảng cách nội bộ giữa các ảnh trong Database với nhau và lưu vào một từ điển (Sparse Lookup).
+Khi có một ảnh Query từ ngoài vào (ở Stage 4 và 5), chúng ta chỉ cần tính Chamfer cho ảnh Query, còn khoảng cách giữa các ảnh Database với nhau sẽ được lôi ra từ Từ điển này, giúp giảm thời gian chạy từ "Vài tiếng" xuống còn "Vài giây".
 
-## 🛠 Lệnh thực thi:
+## 📥 Dữ liệu Đầu vào (Input)
+*   Thư mục đặc trưng cục bộ (Stage 1): `output/stage1/features/.../database/`
+
+## 📤 Dữ liệu Đầu ra (Output)
+*   Từ điển dạng pickle: `output/stage3/roxford5k_sparse_sim.pkl` (hoặc rparis6k_sparse_sim.pkl).
+
+## 🚀 Cách chạy (How to run)
+
+Từ thư mục gốc dự án, chạy lệnh:
+
 ```bash
-python src/offline/stage3_build_index/build_index.py
+# Chạy với Backend Tự động (Ưu tiên CANN nếu có, không có dùng PyTorch)
+python src/offline/stage3_build_index/build_index.py --dataset roxford5k --backend auto
+
+# Hoặc ép buộc chạy bằng PyTorch GPU (Mini-batching 200 ảnh/lần)
+python src/offline/stage3_build_index/build_index.py --dataset roxford5k --backend pytorch
 ```
-
-## 🎯 Mô tả & Ví dụ đầu ra (What you get):
-Màn hình Terminal sẽ xuất hiện:
-```text
-Loading 5063 database local features...
-Total vectors collected: 3,037,800 vectors of size 128.
---------------------------------------------------
-[ASMK] Training Codebook with Faiss (GPU)...
-  => Running KMeans to find 65,536 centroids from 3M vectors.
-  => Training completed in 45.2s. Codebook saved!
---------------------------------------------------
-[ASMK] Building IVF Index (Quantization)...
-  => Pushing 5063 images into IVF buckets.
-  => Binarizing residuals...
-  => IVF Build completed in 12.5s!
---------------------------------------------------
-DONE. Index saved to: output/stage3/asmk/roxford5k_ivf.pkl
-```
-
-### 🧠 Phân tích kết quả:
-- **`3,037,800 vectors`**: Hệ thống đã lấy 5063 ảnh, mỗi ảnh có 600 điểm nổi bật $\Rightarrow 5063 \times 600 = 3,037,800$ điểm chấm trên không gian 128 chiều.
-- **`65,536 centroids`**: Máy GPU dùng thuật toán K-Means gom 3 triệu điểm đó thành 65,536 cụm (Clusters). Mỗi cụm đóng vai trò là 1 "Từ Vựng" (Visual Word).
-- **`IVF (Inverted File)`**: Lập bảng chỉ mục ngược. Giống như trang phụ lục cuối quyển sách: "Từ vựng số 4522 xuất hiện ở các bức ảnh số [12, 456, 1024]".
-- **Vị trí lưu:** `output/stage3/asmk/` (2 file `.pkl` là linh hồn của tốc độ tìm kiếm).
-
----
-
-## 🧮 Nguyên lý toán học (Mathematical Logic)
-Khi một vector điểm ảnh $v$ được phân vào cụm (Từ vựng) số $c$, ASMK không ném bỏ $v$, mà giữ lại **Phần Dư (Residual)** để chống sai số:
-$$ r(v) = v - c $$
-Sau đó nhị phân hóa (Binarization) $r(v)$ thành chuỗi bit $010101$ để tối ưu dung lượng RAM và tính toán khoảng cách bằng phép toán `XOR/Hamming` ở tốc độ phần cứng máy tính (cực kỳ nhanh).
