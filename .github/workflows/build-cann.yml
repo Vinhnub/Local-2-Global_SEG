@@ -3,6 +3,8 @@ name: Compile CANN for Windows
 on:
   workflow_dispatch: # Cho phép bạn bấm nút chạy bằng tay trên web GitHub
   push:
+    branches:
+      - C
     paths:
       - 'google-research/cann/**' # Chỉ tự động chạy khi code trong thư mục CANN thay đổi
 
